@@ -13,6 +13,7 @@
 
     const taskEl = createTaskElement(value);
     list.insertBefore(taskEl, list.firstChild);
+    reorderTasks();
 
     input.value = "";
     input.focus();
@@ -22,6 +23,7 @@
     const li = document.createElement("li");
     li.className = "task task--anim-enter";
     li.setAttribute("data-done", "false");
+    li.setAttribute("data-starred", "false");
 
     const content = document.createElement("div");
     content.className = "task__content";
@@ -45,6 +47,14 @@
     const actions = document.createElement("div");
     actions.className = "task__actions";
 
+    const starBtn = document.createElement("button");
+    starBtn.type = "button";
+    starBtn.className = "task__btn task__btn--star";
+    starBtn.textContent = "☆";
+    starBtn.title = "Star task";
+    starBtn.setAttribute("aria-label", "Star task");
+    starBtn.setAttribute("aria-pressed", "false");
+
     const upBtn = document.createElement("button");
     upBtn.type = "button";
     upBtn.className = "task__btn";
@@ -63,6 +73,7 @@
     deleteBtn.textContent = "✕";
     deleteBtn.title = "Remove task";
 
+    actions.appendChild(starBtn);
     actions.appendChild(upBtn);
     actions.appendChild(downBtn);
     actions.appendChild(deleteBtn);
@@ -71,6 +82,7 @@
     li.appendChild(actions);
 
     checkbox.addEventListener("click", () => toggleDone(li));
+    starBtn.addEventListener("click", () => toggleStar(li, starBtn));
     upBtn.addEventListener("click", () => moveTask(li, "up"));
     downBtn.addEventListener("click", () => moveTask(li, "down"));
     deleteBtn.addEventListener("click", () => removeTask(li));
@@ -87,25 +99,21 @@
     const newValue = (!done).toString();
     taskEl.setAttribute("data-done", newValue);
     taskEl.classList.toggle("task--done", !done);
-
-    if (!done) {
-      moveCompletedToEnd(taskEl);
-    } else {
-      const firstDone = Array.from(list.children).find(
-        (child) => child.getAttribute && child.getAttribute("data-done") === "true"
-      );
-
-      if (firstDone) {
-        list.insertBefore(taskEl, firstDone);
-      } else {
-        list.appendChild(taskEl);
-      }
-    }
+    reorderTasks();
   }
 
-  function moveCompletedToEnd(taskEl) {
-    if (taskEl.parentElement !== list) return;
-    list.appendChild(taskEl);
+  function toggleStar(taskEl, starBtn) {
+    const starred = taskEl.getAttribute("data-starred") === "true";
+    const nowStarred = !starred;
+
+    taskEl.setAttribute("data-starred", nowStarred.toString());
+    taskEl.classList.toggle("task--starred", nowStarred);
+
+    starBtn.textContent = nowStarred ? "★" : "☆";
+    starBtn.setAttribute("aria-pressed", nowStarred.toString());
+    starBtn.setAttribute("aria-label", nowStarred ? "Unstar task" : "Star task");
+
+    reorderTasks();
   }
 
   function moveTask(taskEl, direction) {
@@ -121,6 +129,33 @@
     } else {
       list.insertBefore(sibling, taskEl);
     }
+  }
+
+  function reorderTasks() {
+    const tasks = Array.from(list.children);
+
+    tasks.sort((a, b) => {
+      const aDone = a.getAttribute("data-done") === "true";
+      const bDone = b.getAttribute("data-done") === "true";
+
+      // Incomplete tasks before completed tasks
+      if (aDone !== bDone) {
+        return aDone ? 1 : -1;
+      }
+
+      const aStar = a.getAttribute("data-starred") === "true";
+      const bStar = b.getAttribute("data-starred") === "true";
+
+      // Within same done state, starred tasks first
+      if (aStar !== bStar) {
+        return aStar ? -1 : 1;
+      }
+
+      // Otherwise keep current relative order (stable sort)
+      return 0;
+    });
+
+    tasks.forEach((task) => list.appendChild(task));
   }
 
   function removeTask(taskEl) {
