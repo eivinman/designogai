@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inbox · Tasks</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <div class="app__header-left">
+          <button class="icon-button" aria-label="Back">
+            <span class="icon-button__chevron">&lsaquo;</span>
+          </button>
+        </div>
+        <div class="app__header-center">
+          <div class="app__title-row">
+            <span class="app__title-icon"></span>
+            <h1 class="app__title">Inbox</h1>
+          </div>
+        </div>
+        <div class="app__header-right">
+          <button class="icon-button" aria-label="More options">
+            <span class="icon-button__dots">&bull;&bull;&bull;</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="app__input">
+        <form id="task-form" autocomplete="off">
+          <input
+            id="task-input"
+            type="text"
+            placeholder="New to-do"
+            aria-label="New task"
+            required
+          />
+        </form>
+      </section>
+
+      <section class="app__list">
+        <ul id="task-list" aria-label="To-do list"></ul>
+      </section>
+
+      <button class="fab" type="submit" form="task-form" aria-label="Add task">
+        +
+      </button>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
